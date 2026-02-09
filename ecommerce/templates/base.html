@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}MyShop{% endblock %}</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 30px;
+            background-color: #222;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+            font-size: 16px;
+        }
+
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .nav-right a,
+        .nav-right button {
+            margin-left: 10px;
+            padding: 6px 14px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .login-btn {
+            background-color: #007bff;
+        }
+
+        .register-btn {
+            background-color: #28a745;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+        }
+
+        /* PAGE CONTENT */
+        .container {
+            padding: 30px;
+        }
+        #cart-link {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="nav-left">
+        <a href="/" class="logo">MyShop</a>
+        <a href="/">Products</a>
+        <a href="#" id="cart-link" onclick="handleCartClick(event)">
+            Cart (<span id="cart-count">0</span>)
+        </a>
+    </div>
+
+    <div class="nav-right" id="nav-auth">
+        <!-- JS will inject auth buttons -->
+    </div>
+</nav>
+<!-- PAGE CONTENT -->
+<div class="container">
+    {% block content %}
+    {% endblock %}
+</div>
+
+<script>
+function renderNavbar() {
+    const navAuth = document.getElementById('nav-auth');
+    const token = localStorage.getItem('access');
+
+    if (token) {
+        navAuth.innerHTML = `
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        `;
+        fetchCartCount();
+    } else {
+        navAuth.innerHTML = `
+            <a href="/login/" class="login-btn">Login</a>
+            <a href="/register/" class="register-btn">Register</a>
+        `;
+        document.getElementById('cart-count').innerText = 0;
+    }
+}
+
+// Redirect logic for Cart click
+function handleCartClick(event) {
+    event.preventDefault();
+
+    const token = localStorage.getItem('access');
+
+    if (!token) {
+        window.location.href = '/login/';
+    } else {
+        window.location.href = '/cart/';
+    }
+}
+
+function logout() {
+    localStorage.removeItem('access');
+    window.location.href = "/";
+}
+
+function fetchCartCount() {
+    const token = localStorage.getItem('access');
+
+    fetch('/api/cart/', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(res => {
+        if (res.status === 401) {
+            document.getElementById('cart-count').innerText = 0;
+            return;
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (data && data.items) {
+            document.getElementById('cart-count').innerText = data.items.length;
+        }
+    })
+    .catch(() => {
+        document.getElementById('cart-count').innerText = 0;
+    });
+}
+
+renderNavbar();
+</script>

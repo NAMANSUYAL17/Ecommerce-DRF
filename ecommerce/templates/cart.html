@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Cart{% endblock %}
+
+{% block content %}
+<h2>Your Cart</h2>
+
+<div id="cart-items"></div>
+
+<script>
+const token = localStorage.getItem('access');
+
+fetch('/api/cart/', {
+    headers: {
+        'Authorization': 'Bearer ' + token
+    }
+})
+.then(res => res.json())
+.then(data => {
+    let html = '';
+    data.items.forEach(item => {
+        html += `
+          <div>
+            <h4>${item.product_name}</h4>
+            <p>₹${item.product_price} × ${item.quantity}</p>
+            <button onclick="removeItem(${item.id})">Remove</button>
+          </div>
+        `;
+    });
+    document.getElementById('cart-items').innerHTML = html;
+});
+
+function removeItem(id) {
+    fetch('/api/cart/', {
+        method: 'DELETE',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ item_id: id })
+    })
+    .then(() => location.reload());
+}
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<h2>Login</h2>
+
+<input type="text" id="username" placeholder="Username"><br><br>
+<input type="password" id="password" placeholder="Password"><br><br>
+
+<button onclick="login()">Login</button>
+<p id="msg"></p>
+
+<script>
+function login() {
+    fetch('/api/login/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.access) {
+            localStorage.setItem('access', data.access);
+            window.location.href = "/";
+        } else {
+            document.getElementById('msg').innerText = "Invalid credentials";
+        }
+    });
+}
+</script>
+{% endblock %}

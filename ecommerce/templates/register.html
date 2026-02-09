@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<h2>Create Account</h2>
+
+<div style="max-width: 400px; margin-top: 20px;">
+    <input type="text" id="username" placeholder="Username" style="width:100%; padding:8px;"><br><br>
+    <input type="email" id="email" placeholder="Email" style="width:100%; padding:8px;"><br><br>
+    <input type="password" id="password" placeholder="Password" style="width:100%; padding:8px;"><br><br>
+
+    <button onclick="register()" style="padding:8px 16px;">Register</button>
+    <p id="msg" style="margin-top:10px;"></p>
+</div>
+
+<script>
+function register() {
+    fetch('/api/accounts/register/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            username: document.getElementById('username').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.message) {
+            document.getElementById('msg').style.color = 'green';
+            document.getElementById('msg').innerText = data.message;
+
+            // redirect to login after 1.5 sec
+            setTimeout(() => {
+                window.location.href = '/login/';
+            }, 1500);
+        } else {
+            document.getElementById('msg').style.color = 'red';
+            document.getElementById('msg').innerText = JSON.stringify(data);
+        }
+    })
+}
+</script>
+{% endblock %}

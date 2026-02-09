@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<h1>Products</h1>
+
+<div id="product-list" class="product-grid"></div>
+
+<style>
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.product-card {
+    border: 1px solid #ddd;
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+    background: #fff;
+}
+
+.product-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.add-to-cart {
+    background: #0d6efd;
+    color: white;
+    border: none;
+    padding: 8px;
+    margin-top: 10px;
+    width: 100%;
+    cursor: pointer;
+    border-radius: 4px;
+}
+</style>
+<button id="load-more-btn" onclick="loadProducts()">Load More</button>
+
+<script>
+let nextPageUrl = '/api/products/';
+
+function loadProducts() {
+    if (!nextPageUrl) {
+        document.getElementById('load-more-btn').style.display = 'none';
+        return;
+    }
+
+    fetch(nextPageUrl)
+      .then(res => res.json())
+      .then(data => {
+        let html = '';
+        data.results.forEach(p => {
+          html += `
+            <div class="product-card">
+              <img src="${p.image || '/static/no-image.png'}">
+              <h3>${p.name}</h3>
+              <p>₹${p.price}</p>
+              <button onclick="addToCart(${p.id})">Add to Cart</button>
+            </div>
+          `;
+        });
+
+        document.getElementById('product-list').innerHTML += html;
+        nextPageUrl = data.next;
+
+        if (!nextPageUrl) {
+            document.getElementById('load-more-btn').style.display = 'none';
+        }
+      });
+}
+
+loadProducts(); // initial load
+</script>
+{%endblock%}
